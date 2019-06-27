@@ -90,7 +90,7 @@ func (r JSONResponse) sendResponse(w http.ResponseWriter) {
 type Persons struct {
 	ID          uint
 	Name, Bio   string
-	DateOfBirth uint64
+	DateOfBirth int
 	// going to save date of birth as unix timestamp
 }
 
@@ -100,7 +100,9 @@ func handleGetAllPersons(w http.ResponseWriter, r *http.Request, conn Database) 
 
 	var persons []Persons
 
-	if db.Find(&persons).RecordNotFound() {
+	db.Find(&persons)
+
+	if len(persons) <= 0 {
 		JSONResponse{http.StatusOK, "No record found", nil}.sendResponse(w)
 		return
 	}
@@ -127,11 +129,11 @@ func handleCreatePerson(w http.ResponseWriter, r *http.Request, conn Database) {
 	db, _ := conn.connect()
 	defer db.Close()
 
-	name := r.FormValue("name")
-	bio := r.FormValue("bio")
-	dateOfBirth, _ := strconv.ParseUint(r.FormValue("dateOfBirth"), 0, 0)
+	name := r.FormValue("Name")
+	bio := r.FormValue("Bio")
+	dateOfBirth, _ := strconv.ParseInt(r.FormValue("DateOfBirth"), 0, 0)
 
-	newPerson := Persons{Name: name, Bio: bio, DateOfBirth: dateOfBirth}
+	newPerson := Persons{Name: name, Bio: bio, DateOfBirth: int(dateOfBirth)}
 
 	if strings.TrimSpace(newPerson.Name) == "" || strings.TrimSpace(newPerson.Bio) == "" {
 		JSONResponse{http.StatusBadRequest, "Bad request", nil}.sendResponse(w)
@@ -161,10 +163,10 @@ func handleUpdatePerson(w http.ResponseWriter, r *http.Request, conn Database) {
 		return
 	}
 
-	person.Name = r.FormValue("name")
-	person.Bio = r.FormValue("bio")
-	dateOfBirth, _ := strconv.ParseUint(r.FormValue("dateOfBirth"), 0, 0)
-	person.DateOfBirth = dateOfBirth
+	person.Name = r.FormValue("Name")
+	person.Bio = r.FormValue("Bio")
+	dateOfBirth, _ := strconv.ParseInt(r.FormValue("DateOfBirth"), 0, 0)
+	person.DateOfBirth = int(dateOfBirth)
 
 	if strings.TrimSpace(person.Name) == "" || strings.TrimSpace(person.Bio) == "" {
 		JSONResponse{http.StatusBadRequest, "Bad request", nil}.sendResponse(w)
