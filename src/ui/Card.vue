@@ -33,7 +33,7 @@ export default {
 }
 
 /*  For medium screen sizes */
-@media screen and (min-width: 576px) {
+@media (min-width: 576px) {
   /* Show cards by 2 */
   .card {
     width: 30%;
@@ -41,12 +41,12 @@ export default {
 }
 
 /* For big screen sizes */
-@media screen and (min-width: 769px) {
+@media (min-width: 768px) {
   /* Show card by 3 */
   .card {
     margin-left: 0;
-    margin-right: 0;
-    width: 25%;
+    margin-right: 3%;
+    width: 26%;
   }
 }
 </style>

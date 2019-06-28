@@ -145,7 +145,7 @@ html {
 }
 
 /* For big screen sizes */
-@media screen and (min-width: 769px) {
+@media (min-width: 992px) {
   /* Correct text direction */
   .app .app-title {
     text-align: left;
@@ -153,7 +153,7 @@ html {
 
   /* Display correct spacing between cards */
   .app .cards-container {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 }
 </style>
