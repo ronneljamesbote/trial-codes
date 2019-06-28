@@ -46,73 +46,82 @@ export default {
     };
   },
   created() {
-    const vm = this;
-
-    axios
-      .get("/persons")
-      .then(res => {
-        vm.persons = res.data.data;
-      })
-      .catch(err => {
-        window.alert("Something broke! Please try again later.");
-        console.log(err);
-      });
+    this.getPersons();
   },
   methods: {
-    handleCreatePerson(person, success) {
-      const vm = this;
+    handleSelectedChanged(id) {
+      this.selectedCard = id;
+    },
+    handleCreatePerson(person, success, error) {
       const date = moment.utc(person.DateOfBirth);
-      person.DateOfBirth = date.format("x");
+      person.DateOfBirth = date.isValid() && date.format("x");
 
       axios
         .post("/persons", qs.stringify(person))
         .then(res => {
-          vm.persons.push(res.data.data);
+          this.persons.unshift(res.data.data);
 
-          typeof success === "function" && success();
+          typeof success === "function" && success(res);
         })
         .catch(err => {
-          window.alert("Something broke! Please try again later.");
+          typeof error === "function" && error(err);
+
           console.log(err);
+          window.alert("Something broke! Please try again later.");
         });
     },
-    handleDeletePerson(id) {
-      const vm = this;
-
+    handleDeletePerson(id, success, error) {
       axios
         .delete(`/persons/${id}`)
         .then(res => {
-          vm.persons = vm.persons.filter(person => {
-            return person.ID !== id;
+          this.persons = this.persons.filter(value => {
+            return value.ID !== res.data.data.ID;
           });
+
+          typeof success === "function" && success(res);
         })
         .catch(err => {
-          window.alert("Something broke! Please try again later.");
+          typeof error === "function" && error(err);
+
           console.log(err);
+          window.alert("Something broke! Please try again later.");
         });
     },
-    handleUpdatePerson(person, success) {
-      const vm = this;
+    handleUpdatePerson(person, success, error) {
       const date = moment.utc(person.DateOfBirth);
-      person.DateOfBirth = date.format("x");
+      person.DateOfBirth = date.isValid() && date.format("x");
 
       axios
         .put(`/persons/${person.ID}`, qs.stringify(person))
         .then(res => {
-          const index = vm.persons.findIndex(value => {
+          const index = this.persons.findIndex(value => {
             return value.ID === person.ID;
           });
+          this.$set(this.persons, index, res.data.data);
 
-          vm.$set(vm.persons, index, res.data.data);
-          typeof success === "function" && success(res.data.data);
+          typeof success === "function" && success(res);
         })
         .catch(err => {
-          window.alert("Something broke! Please try again later.");
+          typeof error === "function" && error(err);
+
           console.log(err);
+          window.alert("Something broke! Please try again later.");
         });
     },
-    handleSelectedChanged(id) {
-      this.selectedCard = id;
+    getPersons(success, error) {
+      axios
+        .get("/persons")
+        .then(res => {
+          this.persons = res.data.data.reverse();
+
+          typeof success === "function" && success(res);
+        })
+        .catch(err => {
+          typeof error === "function" && error(err);
+
+          console.log(err);
+          window.alert("Something broke! Please try again later.");
+        });
     }
   }
 };
