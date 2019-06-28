@@ -24,11 +24,11 @@
 import axios from "axios";
 import qs from "qs";
 import moment from "moment";
-import AddCard from "./AddCard.vue";
-import Content from "./layout/Content.vue";
-import Footer from "./layout/Footer.vue";
-import Header from "./layout/Header.vue";
-import PersonCard from "./PersonCard.vue";
+import AddCard from "./components/AddCard.vue";
+import Content from "./components/layout/Content.vue";
+import Footer from "./components/layout/Footer.vue";
+import Header from "./components/layout/Header.vue";
+import PersonCard from "./components/PersonCard.vue";
 
 export default {
   name: "app",
