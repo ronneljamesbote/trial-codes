@@ -11,7 +11,7 @@
       class="person-birthdate-input"
       :class="{'invalid': touched && !valid.DateOfBirth}"
       placeholder="Date of birth"
-      title="Enter a valid date"
+      title="Month day year format"
       type="text"
       v-model="value.DateOfBirth"
     >
@@ -45,16 +45,14 @@ export default {
   },
   watch: {
     value: {
-      handler(object) {
-        this.$emit("input", this.value);
+      handler(values) {
         this.touched = true;
 
-        if (!this.isFormValid(object)) {
-          this.$emit("form-valid", false);
-          return;
+        if (!this.emitNotValid(values)) {
+          this.emitValid();
         }
 
-        this.$emit("form-valid", true);
+        this.$emit("input", this.value);
       },
       deep: true
     },
@@ -65,7 +63,6 @@ export default {
     }
   },
   destroyed() {
-    this.$emit("form-destroyed");
     this.$emit("form-valid", true);
   },
   methods: {
@@ -81,7 +78,6 @@ export default {
       } else {
         this.valid.Bio = true;
       }
-      this.touched = true;
 
       const date = moment.utc(object.DateOfBirth);
       if (
@@ -104,6 +100,15 @@ export default {
         DateOfBirth: true,
         Name: true
       };
+    },
+    emitNotValid(values) {
+      if (this.isFormValid(values)) return false;
+
+      this.$emit("form-valid", false);
+      return true;
+    },
+    emitValid() {
+      this.$emit("form-valid", true);
     }
   }
 };

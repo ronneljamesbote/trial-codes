@@ -5,12 +5,7 @@
     @mouseleave.native="handleHover"
   >
     <PersonDetails v-if="!isSelected" :details="tempPerson"/>
-    <PersonForm
-      v-else
-      v-model="tempPerson"
-      @form-destroyed="handleFormDestroyed"
-      @form-valid="getFormStatus"
-    />
+    <PersonForm v-else v-model="tempPerson" @form-valid="getFormStatus"/>
 
     <div v-if="mouseon && !editting">
       <Button class="delete-button" @click.native="handleDeleteClick">Delete</Button>
@@ -39,7 +34,7 @@ export default {
     PersonForm
   },
   props: {
-    person: Object,
+    person: { type: Object, required: true },
     selected: { type: Boolean, default: false }
   },
   data() {
@@ -55,8 +50,16 @@ export default {
       }
     };
   },
+  watch: {
+    person() {
+      this.initTempPerson();
+    },
+    selected(status) {
+      if (!status) this.initTempPerson();
+    }
+  },
   computed: {
-    strDateOfBirth() {
+    compDateOfBirth() {
       return moment.utc(this.person.DateOfBirth).format("MMM DD YYYY");
     },
     isSelected() {
@@ -64,15 +67,13 @@ export default {
     }
   },
   created() {
-    if (this.person) {
-      this.resetTempValue();
-    }
+    this.initTempPerson();
   },
   methods: {
     handleEditClick() {
       this.editting = true;
 
-      this.$emit("selected-changed", this.person.ID);
+      this.emitSelectedChanged(this.person.ID);
     },
     handleDeleteClick() {
       if (!window.confirm("You are deleting a person. Continue?")) return;
@@ -80,25 +81,16 @@ export default {
       this.$emit("delete-person", this.person.ID);
     },
     handleSaveClick() {
-      const vm = this;
       this.editting = false;
 
-      this.$emit("selected-changed", null);
-      this.$emit("update-person", this.tempPerson, function(updatedPerson) {
-        vm.tempPerson = {
-          ID: updatedPerson.ID,
-          Name: updatedPerson.Name,
-          DateOfBirth: moment
-            .utc(updatedPerson.DateOfBirth)
-            .format("MMM DD YYYY"),
-          Bio: updatedPerson.Bio
-        };
-      });
+      this.emitSelectedChanged();
+      this.$emit("update-person", this.tempPerson);
     },
     handleCancelClick() {
       this.editting = false;
 
-      this.$emit("selected-changed", null);
+      this.initTempPerson();
+      this.emitSelectedChanged();
     },
     handleHover(event) {
       if (this.isSelected) return;
@@ -114,19 +106,19 @@ export default {
 
       this.editting = false;
     },
-    handleFormDestroyed() {
-      this.resetTempValue();
-    },
     getFormStatus(status) {
       this.cansave = status;
     },
-    resetTempValue() {
+    initTempPerson() {
       this.tempPerson = {
         ID: this.person.ID,
         Name: this.person.Name,
-        DateOfBirth: this.strDateOfBirth,
+        DateOfBirth: this.compDateOfBirth,
         Bio: this.person.Bio
       };
+    },
+    emitSelectedChanged(selected) {
+      this.$emit("selected-changed", selected === undefined ? null : selected);
     }
   }
 };
