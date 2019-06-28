@@ -59,7 +59,7 @@ export default {
       });
   },
   methods: {
-    handleCreatePerson(person, successCb) {
+    handleCreatePerson(person, success) {
       const vm = this;
       const date = moment.utc(person.DateOfBirth);
       person.DateOfBirth = date.format("x");
@@ -69,7 +69,7 @@ export default {
         .then(res => {
           vm.persons.push(res.data.data);
 
-          typeof successCb === "function" && successCb();
+          typeof success === "function" && success();
         })
         .catch(err => {
           window.alert("Something broke! Please try again later.");
@@ -91,7 +91,7 @@ export default {
           console.log(err);
         });
     },
-    handleUpdatePerson(person, successCb) {
+    handleUpdatePerson(person, success) {
       const vm = this;
       const date = moment.utc(person.DateOfBirth);
       person.DateOfBirth = date.format("x");
@@ -104,7 +104,7 @@ export default {
           });
 
           vm.$set(vm.persons, index, res.data.data);
-          typeof successCb === "function" && successCb(res.data.data);
+          typeof success === "function" && success(res.data.data);
         })
         .catch(err => {
           window.alert("Something broke! Please try again later.");

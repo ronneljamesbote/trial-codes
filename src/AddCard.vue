@@ -47,18 +47,17 @@ export default {
   },
   methods: {
     handleCreateClick() {
-      const vm = this;
-
-      this.$emit("create-person", this.person, function() {
-        vm.person = {
-          Bio: "",
-          DateOfBirth: "",
-          Name: ""
-        };
-      });
+      this.$emit("create-person", this.person, this.clearForm);
     },
     getFormStatus(status) {
       this.cansave = status;
+    },
+    clearForm() {
+      this.person = {
+        Bio: "",
+        DateOfBirth: "",
+        Name: ""
+      };
     }
   }
 };
