@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
+	validator "github.com/gobuffalo/validate"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -32,6 +34,16 @@ func startServer(port int, router *mux.Router) {
 	if err != nil {
 		log.Fatal("Starting server error: ", err)
 	}
+}
+
+func convertStrNumToInt(strInt string) (int, error) {
+	converted, err := strconv.ParseInt(strInt, 0, 0)
+
+	if err != nil {
+		return 0, errors.New("Cannot be converted to int")
+	}
+
+	return int(converted), nil
 }
 
 // Database database connection struct
@@ -59,7 +71,7 @@ func withDbConnect(fn func(http.ResponseWriter, *http.Request, Database)) http.H
 
 		if err != nil {
 			JSONResponse{http.StatusInternalServerError, "Internal server error", nil}.sendResponse(w)
-			log.Println(err)
+			log.Println("Connection error: ", err)
 			return
 		}
 
@@ -79,7 +91,9 @@ func (r JSONResponse) sendResponse(w http.ResponseWriter) {
 	w.WriteHeader(r.httpCode)
 
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(map[string]interface{}{"httpCode": r.httpCode, "message": r.message, "data": r.data}); err != nil {
+
+	err := encoder.Encode(map[string]interface{}{"httpCode": r.httpCode, "message": r.message, "data": r.data})
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		encoder.Encode(map[string]interface{}{"httpCode": http.StatusInternalServerError, "message": "Internal server error", "data": nil})
 		log.Println("Internal server error: ", err)
@@ -94,15 +108,37 @@ type Persons struct {
 	// going to save date of birth as unix timestamp
 }
 
+// PersonForm struct for person post requests
+type PersonForm struct {
+	Name, Bio, DateOfBirth string
+}
+
+// IsValid validates PersonForm struct
+func (p *PersonForm) IsValid(errors *validator.Errors) {
+	name := strings.TrimSpace(p.Name)
+	bio := strings.TrimSpace(p.Bio)
+	dateOfBirth := strings.TrimSpace(p.DateOfBirth)
+
+	if len(name) < 5 {
+		errors.Add("Name", "Name is too short")
+	}
+
+	if len(bio) < 5 {
+		errors.Add("Bio", "Bio is too short")
+	}
+
+	if _, err := convertStrNumToInt(p.DateOfBirth); len(dateOfBirth) < 8 || err != nil {
+		errors.Add("DateOfBirth", "Invalid birth of date provided")
+	}
+}
+
 func handleGetAllPersons(w http.ResponseWriter, r *http.Request, conn Database) {
 	db, _ := conn.connect()
 	defer db.Close()
 
 	var persons []Persons
 
-	db.Find(&persons)
-
-	if len(persons) <= 0 {
+	if db.Find(&persons); len(persons) == 0 {
 		JSONResponse{http.StatusOK, "No record found", nil}.sendResponse(w)
 		return
 	}
@@ -116,8 +152,13 @@ func handleGetPerson(w http.ResponseWriter, r *http.Request, conn Database) {
 
 	var person Persons
 
-	parameters := mux.Vars(r)
-	if db.First(&person, parameters["id"]).RecordNotFound() {
+	id, err := convertStrNumToInt(mux.Vars(r)["id"])
+	if err != nil {
+		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
+		return
+	}
+
+	if db.First(&person, id).RecordNotFound() {
 		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
 		return
 	}
@@ -129,15 +170,22 @@ func handleCreatePerson(w http.ResponseWriter, r *http.Request, conn Database) {
 	db, _ := conn.connect()
 	defer db.Close()
 
-	name := r.FormValue("Name")
-	bio := r.FormValue("Bio")
-	dateOfBirth, _ := strconv.ParseInt(r.FormValue("DateOfBirth"), 0, 0)
+	formValues := PersonForm{
+		Name:        r.FormValue("Name"),
+		Bio:         r.FormValue("Bio"),
+		DateOfBirth: r.FormValue("DateOfBirth"),
+	}
 
-	newPerson := Persons{Name: name, Bio: bio, DateOfBirth: int(dateOfBirth)}
-
-	if strings.TrimSpace(newPerson.Name) == "" || strings.TrimSpace(newPerson.Bio) == "" {
-		JSONResponse{http.StatusBadRequest, "Bad request", nil}.sendResponse(w)
+	if err := validator.Validate(&formValues); err.Count() != 0 {
+		JSONResponse{http.StatusBadRequest, "Bad request", err}.sendResponse(w)
 		return
+	}
+
+	dateOfBirth, _ := convertStrNumToInt(formValues.Bio)
+	newPerson := Persons{
+		Name:        formValues.Name,
+		Bio:         formValues.Bio,
+		DateOfBirth: dateOfBirth,
 	}
 
 	db.NewRecord(newPerson)
@@ -156,24 +204,34 @@ func handleUpdatePerson(w http.ResponseWriter, r *http.Request, conn Database) {
 
 	var person Persons
 
-	paramaters := mux.Vars(r)
-	result := db.First(&person, paramaters["id"])
-	if result.RecordNotFound() {
+	id, err := convertStrNumToInt(mux.Vars(r)["id"])
+	if err != nil {
 		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
 		return
 	}
 
-	person.Name = r.FormValue("Name")
-	person.Bio = r.FormValue("Bio")
-	dateOfBirth, _ := strconv.ParseInt(r.FormValue("DateOfBirth"), 0, 0)
-	person.DateOfBirth = int(dateOfBirth)
-
-	if strings.TrimSpace(person.Name) == "" || strings.TrimSpace(person.Bio) == "" {
-		JSONResponse{http.StatusBadRequest, "Bad request", nil}.sendResponse(w)
+	if db.First(&person, id).RecordNotFound() {
+		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
 		return
 	}
 
-	if dbs := db.Save(&person); dbs.Error != nil {
+	formValues := PersonForm{
+		Name:        r.FormValue("Name"),
+		Bio:         r.FormValue("Bio"),
+		DateOfBirth: r.FormValue("DateOfBirth"),
+	}
+
+	if err := validator.Validate(&formValues); err.Count() != 0 {
+		JSONResponse{http.StatusBadRequest, "Bad request", err}.sendResponse(w)
+		return
+	}
+
+	person.Name = formValues.Name
+	person.Bio = formValues.Bio
+	dateOfBirth, _ := convertStrNumToInt(formValues.DateOfBirth)
+	person.DateOfBirth = dateOfBirth
+
+	if db.Save(&person).Error != nil {
 		JSONResponse{http.StatusBadRequest, "Bad request", nil}.sendResponse(w)
 		return
 	}
@@ -187,8 +245,13 @@ func handleDeletePerson(w http.ResponseWriter, r *http.Request, conn Database) {
 
 	var person Persons
 
-	paramaters := mux.Vars(r)
-	result := db.First(&person, paramaters["id"])
+	id, err := convertStrNumToInt(mux.Vars(r)["id"])
+	if err != nil {
+		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
+		return
+	}
+
+	result := db.First(&person, id)
 	if result.RecordNotFound() {
 		JSONResponse{http.StatusNotFound, "Not found", nil}.sendResponse(w)
 		return
