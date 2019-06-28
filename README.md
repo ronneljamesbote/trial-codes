@@ -9,4 +9,4 @@ Frontend part for a test trial.
 
 ## Links
 
-- [Live Demo](https://trial-codes.firebaseapp.com/)
+- ~~[Live Demo](https://trial-codes.firebaseapp.com/)~~ - outdated build
