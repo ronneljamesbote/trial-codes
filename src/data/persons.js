@@ -1,74 +1,74 @@
 export default [
   {
-    id: 1,
-    name: "Marilyn Monroe",
-    bio: "American actress, singer, model",
-    birthdate: "Jun 1, 1926"
+    ID: 1,
+    Name: "Marilyn Monroe",
+    Bio: "American actress, singer, model",
+    DateOfBirth: "Jun 1, 1926"
   },
   {
-    id: 2,
-    name: "Abraham Lincoln",
-    bio: "US President during American civil war",
-    birthdate: "Feb 12, 1809"
+    ID: 2,
+    Name: "Abraham Lincoln",
+    Bio: "US President during American civil war",
+    DateOfBirth: "Feb 12, 1809"
   },
   {
-    id: 3,
-    name: "Mother Teresa",
-    bio: "Macedonian Catholic missionary nun",
-    birthdate: "Aug 26, 1910"
+    ID: 3,
+    Name: "Mother Teresa",
+    Bio: "Macedonian Catholic missionary nun",
+    DateOfBirth: "Aug 26, 1910"
   },
   {
-    id: 4,
-    name: "Marilyn Monroe",
-    bio: "American actress, singer, model",
-    birthdate: "Jun 1, 1926"
+    ID: 4,
+    Name: "Marilyn Monroe",
+    Bio: "American actress, singer, model",
+    DateOfBirth: "Jun 1, 1926"
   },
   {
-    id: 5,
-    name: "Abraham Lincoln",
-    bio: "US President during American civil war",
-    birthdate: "Feb 12, 1809"
+    ID: 5,
+    Name: "Abraham Lincoln",
+    Bio: "US President during American civil war",
+    DateOfBirth: "Feb 12, 1809"
   },
   {
-    id: 6,
-    name: "Mother Teresa",
-    bio: "Macedonian Catholic missionary nun",
-    birthdate: "Aug 26, 1910"
+    ID: 6,
+    Name: "Mother Teresa",
+    Bio: "Macedonian Catholic missionary nun",
+    DateOfBirth: "Aug 26, 1910"
   },
   {
-    id: 7,
-    name: "Marilyn Monroe",
-    bio: "American actress, singer, model",
-    birthdate: "Jun 1, 1926"
+    ID: 7,
+    Name: "Marilyn Monroe",
+    Bio: "American actress, singer, model",
+    DateOfBirth: "Jun 1, 1926"
   },
   {
-    id: 8,
-    name: "Abraham Lincoln",
-    bio: "US President during American civil war",
-    birthdate: "Feb 12, 1809"
+    ID: 8,
+    Name: "Abraham Lincoln",
+    Bio: "US President during American civil war",
+    DateOfBirth: "Feb 12, 1809"
   },
   {
-    id: 9,
-    name: "Mother Teresa",
-    bio: "Macedonian Catholic missionary nun",
-    birthdate: "Aug 26, 1910"
+    ID: 9,
+    Name: "Mother Teresa",
+    Bio: "Macedonian Catholic missionary nun",
+    DateOfBirth: "Aug 26, 1910"
   },
   {
-    id: 10,
-    name: "Marilyn Monroe",
-    bio: "American actress, singer, model",
-    birthdate: "Jun 1, 1926"
+    ID: 10,
+    Name: "Marilyn Monroe",
+    Bio: "American actress, singer, model",
+    DateOfBirth: "Jun 1, 1926"
   },
   {
-    id: 11,
-    name: "Abraham Lincoln",
-    bio: "US President during American civil war",
-    birthdate: "Feb 12, 1809"
+    ID: 11,
+    Name: "Abraham Lincoln",
+    Bio: "US President during American civil war",
+    DateOfBirth: "Feb 12, 1809"
   },
   {
-    id: 12,
-    name: "Mother Teresa",
-    bio: "Macedonian Catholic missionary nun",
-    birthdate: "Aug 26, 1910"
+    ID: 12,
+    Name: "Mother Teresa",
+    Bio: "Macedonian Catholic missionary nun",
+    DateOfBirth: "Aug 26, 1910"
   }
 ];

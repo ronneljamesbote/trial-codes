@@ -1,10 +1,10 @@
 <template>
   <div class="app">
-    <Header/>
+    <Header />
     <Content>
       <h1 class="app-title">Famous Persons</h1>
       <div class="cards-container">
-        <AddCard :selected="selectedCard === null" @create-person="handleCreatePerson"/>
+        <AddCard :selected="selectedCard === null" @create-person="handleCreatePerson" />
         <PersonCard
           v-for="person in persons"
           v-bind="{person}"
@@ -16,19 +16,19 @@
         />
       </div>
     </Content>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import qs from "qs";
+import persons from "./data/persons";
 import moment from "moment";
 import AddCard from "./components/AddCard.vue";
 import Content from "./components/layout/Content.vue";
 import Footer from "./components/layout/Footer.vue";
 import Header from "./components/layout/Header.vue";
 import PersonCard from "./components/PersonCard.vue";
+import { setTimeout } from "timers";
 
 export default {
   name: "app",
@@ -52,76 +52,32 @@ export default {
     handleSelectedChanged(id) {
       this.selectedCard = id;
     },
-    handleCreatePerson(person, success, error) {
-      const date = moment.utc(person.DateOfBirth);
-      person.DateOfBirth = date.isValid() && date.format("x");
+    handleCreatePerson(person, success) {
+      const lastId = this.persons[0].ID;
+      const newPerson = { ID: lastId + 1, ...person };
 
-      axios
-        .post("/persons", qs.stringify(person))
-        .then(res => {
-          this.persons.unshift(res.data.data);
+      this.persons.unshift(newPerson);
 
-          typeof success === "function" && success(res);
-        })
-        .catch(err => {
-          typeof error === "function" && error(err);
-
-          console.log(err);
-          window.alert("Something broke! Please try again later.");
-        });
+      typeof success === "function" && success(newPerson);
     },
-    handleDeletePerson(id, success, error) {
-      axios
-        .delete(`/persons/${id}`)
-        .then(res => {
-          this.persons = this.persons.filter(value => {
-            return value.ID !== res.data.data.ID;
-          });
+    handleDeletePerson(id, success) {
+      // Save person to be deleted
+      const temp = this.persons.filter(p => p.ID === id);
 
-          typeof success === "function" && success(res);
-        })
-        .catch(err => {
-          typeof error === "function" && error(err);
+      this.persons = this.persons.filter(p => p.ID != id);
 
-          console.log(err);
-          window.alert("Something broke! Please try again later.");
-        });
+      typeof success === "function" && success(temp);
     },
-    handleUpdatePerson(person, success, error) {
-      const date = moment.utc(person.DateOfBirth);
-      person.DateOfBirth = date.isValid() && date.format("x");
+    handleUpdatePerson(person, success) {
+      const index = this.persons.findIndex(p => p.ID === person.ID);
+      this.$set(this.persons, index, person);
 
-      axios
-        .put(`/persons/${person.ID}`, qs.stringify(person))
-        .then(res => {
-          const index = this.persons.findIndex(value => {
-            return value.ID === person.ID;
-          });
-          this.$set(this.persons, index, res.data.data);
-
-          typeof success === "function" && success(res);
-        })
-        .catch(err => {
-          typeof error === "function" && error(err);
-
-          console.log(err);
-          window.alert("Something broke! Please try again later.");
-        });
+      typeof success === "function" && success(person);
     },
-    getPersons(success, error) {
-      axios
-        .get("/persons")
-        .then(res => {
-          this.persons = res.data.data.reverse();
+    getPersons(success) {
+      this.persons = persons.reverse();
 
-          typeof success === "function" && success(res);
-        })
-        .catch(err => {
-          typeof error === "function" && error(err);
-
-          console.log(err);
-          window.alert("Something broke! Please try again later.");
-        });
+      typeof success === "function" && success(this.persons);
     }
   }
 };
