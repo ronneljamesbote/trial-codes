@@ -9,4 +9,4 @@ Frontend part for a test trial.
 
 ## Links
 
-- ~~[Live Demo](https://trial-codes.firebaseapp.com/)~~ - outdated build
+- [Live Demo](https://trial-codes.firebaseapp.com/) - view sourcecode [here](https://github.com/ronneljamesbote/trial-codes/tree/frontend-part-static-html)
